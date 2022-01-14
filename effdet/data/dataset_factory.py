@@ -8,9 +8,57 @@ from pathlib import Path
 
 from .dataset_config import *
 from .parsers import *
-from .dataset import DetectionDatset
+from .dataset import DetectionDatset, COTSDetectionDataset
 from .parsers import create_parser
 
+def create_xray_dataset(name, root, fold, splits=('train', 'val')):
+    if isinstance(splits, str):
+        splits = (splits,)
+    name = name.lower()
+    root = Path(root)
+    dataset_cls = XrayDetectionDatset
+    datasets = OrderedDict()
+
+    if fold == 0:
+        dataset_cfg = XrayCfgFold0()
+    elif fold == 1:
+        dataset_cfg = XrayCfgFold1()
+    elif fold == 2:
+        dataset_cfg = XrayCfgFold2()
+    elif fold == 3:
+        dataset_cfg = XrayCfgFold3()
+    elif fold == 4:
+        dataset_cfg = XrayCfgFold4()
+    
+    for s in splits:
+        if s not in dataset_cfg.splits:
+            raise RuntimeError(f'{s} split not found in config')
+        split_cfg = dataset_cfg.splits[s]
+        if isinstance(split_cfg['split_filename'], (tuple, list)):
+            assert len(split_cfg['split_filename']) == len(split_cfg['ann_filename'])
+            parser = None
+            for sf, af, id in zip(
+                    split_cfg['split_filename'], split_cfg['ann_filename'], split_cfg['img_dir']):
+                parser_cfg = VocParserCfg(
+                    split_filename=root / sf,
+                    ann_filename=os.path.join(root, af),
+                    img_filename=os.path.join(id, dataset_cfg.img_filename))
+                if parser is None:
+                    parser = create_parser(dataset_cfg.parser, cfg=parser_cfg)
+                else:
+                    other_parser = create_parser(dataset_cfg.parser, cfg=parser_cfg)
+                    parser.merge(other=other_parser)
+        else:
+            parser_cfg = VocParserCfg(
+                split_filename=root / split_cfg['split_filename'],
+                ann_filename=os.path.join(root, split_cfg['ann_filename']),
+                img_filename=os.path.join(split_cfg['img_dir'], dataset_cfg.img_filename),
+            )
+            parser = create_parser(dataset_cfg.parser, cfg=parser_cfg)
+        datasets[s] = dataset_cls(data_dir=root, parser=parser, split=s)
+
+    datasets = list(datasets.values())
+    return datasets if len(datasets) > 1 else datasets[0]
 
 def create_dataset(name, root, splits=('train', 'val')):
     if isinstance(splits, str):
