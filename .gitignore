@@ -135,3 +135,6 @@ dmypy.json
 *.tar
 *.pth
 *.gz
+
+cots_dataset/folds/
+cots_dataset/labels/
