@@ -8,7 +8,7 @@ from pathlib import Path
 
 from .dataset_config import *
 from .parsers import *
-from .dataset import DetectionDatset, COTSDetectionDataset
+from .dataset import DetectionDatset, COTSDetectionDatset
 from .parsers import create_parser
 
 def create_cots_dataset(name, root, im_dir, fold, splits=('train', 'val')):
@@ -16,7 +16,7 @@ def create_cots_dataset(name, root, im_dir, fold, splits=('train', 'val')):
         splits = (splits,)
     name = name.lower()
     root = Path(root)
-    dataset_cls = COTSDetectionDataset
+    dataset_cls = COTSDetectionDatset
     datasets = OrderedDict()
 
     if fold == 0:
