@@ -31,10 +31,12 @@ def create_ann(ele):
     node_root = Element('annotation')
 
     node_folder = SubElement(node_root, 'folder')
-    node_folder.text = 'train'
+    # node_folder.text = 'train'
+    node_folder.text = ''
     
     node_filename = SubElement(node_root, 'filename')
-    node_filename.text = f'{ele.imageid}.jpg'
+    # node_filename.text = f'{ele.imageid}.jpg'
+    node_filename.text = ele.image_relative_path
     
     node_size = SubElement(node_root, 'size')
     node_width = SubElement(node_size, 'width')
@@ -78,8 +80,9 @@ def create_ann(ele):
     return None
 
 class ME:
-    def __init__(self, image_path, imageid, boxes):
+    def __init__(self, image_path, image_relative_path, imageid, boxes):
         self.image_path = image_path
+        self.image_relative_path = image_relative_path
         self.imageid = imageid
         self.boxes = boxes
 
@@ -104,12 +107,13 @@ if __name__ == '__main__':
         for _, row in tmp_df.iterrows():
             video_id = row.video_id
             video_frame = row.video_frame
-            image_path  = os.path.join(IMAGE_DIR, f'video_{video_id}', f'{video_frame}.jpg')
+            image_relative_path = f'video_{video_id}/{video_frame}.jpg'
+            image_path  = os.path.join(IMAGE_DIR, image_relative_path)
             image_id = row.image_id
             bboxes = row.bboxes
 
             if len(bboxes) > 0:
-                meles.append(ME(image_path, row['image_id'], bboxes))
+                meles.append(ME(image_path, image_relative_path, row['image_id'], bboxes))
         
         p = Pool(8)
         results = p.map(func=create_ann, iterable = meles)

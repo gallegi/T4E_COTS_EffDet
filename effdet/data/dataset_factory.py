@@ -11,24 +11,24 @@ from .parsers import *
 from .dataset import DetectionDatset, COTSDetectionDataset
 from .parsers import create_parser
 
-def create_xray_dataset(name, root, fold, splits=('train', 'val')):
+def create_cots_dataset(name, root, im_dir, fold, splits=('train', 'val')):
     if isinstance(splits, str):
         splits = (splits,)
     name = name.lower()
     root = Path(root)
-    dataset_cls = XrayDetectionDatset
+    dataset_cls = COTSDetectionDataset
     datasets = OrderedDict()
 
     if fold == 0:
-        dataset_cfg = XrayCfgFold0()
+        dataset_cfg = COTSCfgFold(0, im_dir)
     elif fold == 1:
-        dataset_cfg = XrayCfgFold1()
+        dataset_cfg = COTSCfgFold(1, im_dir)
     elif fold == 2:
-        dataset_cfg = XrayCfgFold2()
+        dataset_cfg = COTSCfgFold(2, im_dir)
     elif fold == 3:
-        dataset_cfg = XrayCfgFold3()
+        dataset_cfg = COTSCfgFold(3, im_dir)
     elif fold == 4:
-        dataset_cfg = XrayCfgFold4()
+        dataset_cfg = COTSCfgFold(4, im_dir)
     
     for s in splits:
         if s not in dataset_cfg.splits:

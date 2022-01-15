@@ -2,8 +2,10 @@
 
 Copyright 2020 Ross Wightman
 """
+from effdet.data.parsers.parser_cots import COTSParser
 from .parser_coco import CocoParser
 from .parser_voc import VocParser
+from .parser_cots import COTSParser
 from .parser_open_images import OpenImagesParser
 
 
@@ -12,6 +14,8 @@ def create_parser(name, **kwargs):
         parser = CocoParser(**kwargs)
     elif name == 'voc':
         parser = VocParser(**kwargs)
+    elif name == 'cots':
+        parser = COTSParser(**kwargs)
     elif name == 'openimages':
         parser = OpenImagesParser(**kwargs)
     else:
