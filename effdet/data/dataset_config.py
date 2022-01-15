@@ -21,7 +21,7 @@ class COTSCfgFold:
 
         self.splits: Dict[str, dict] = dict(
             train=dict(
-                split_filename=[f'siim-covid19-detection/folds/effdet_train_fold{fold}.txt'],
+                split_filename=[f'cots_dataset/folds/effdet_train_fold{fold}.txt'],
                 ann_filename=['cots_dataset/labels/train/%s.xml'],
                 img_dir=[im_dir]),
             val=dict(
