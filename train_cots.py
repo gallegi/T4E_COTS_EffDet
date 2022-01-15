@@ -288,7 +288,7 @@ def main():
         model = create_model(
             args.model,
             bench_task='train',
-            image_size=image_size=(args.image_size,args.image_size), # custom image size
+            image_size=(args.image_size,args.image_size), # custom image size
             num_classes=args.num_classes,
             pretrained=args.pretrained,
             pretrained_backbone=args.pretrained_backbone,
