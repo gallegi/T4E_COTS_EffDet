@@ -207,6 +207,7 @@ parser.add_argument("--local_rank", default=0, type=int)
 parser.add_argument('--im_dir', default='', type=str,
                     help='Path to image_folder')
 parser.add_argument('--fold', type=int, default=0)
+parser.add_argument('--image_size', type=int, default=1280)
 
 def _parse_args():
     # Do we have a config file to parse?
@@ -287,6 +288,7 @@ def main():
         model = create_model(
             args.model,
             bench_task='train',
+            image_size=args.image_size, # custom image size
             num_classes=args.num_classes,
             pretrained=args.pretrained,
             pretrained_backbone=args.pretrained_backbone,
