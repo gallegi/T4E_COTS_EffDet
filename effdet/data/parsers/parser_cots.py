@@ -4,14 +4,14 @@ from collections import defaultdict
 import numpy as np
 
 from .parser import Parser
-from .parser_config import COTSParserCfg
+from .parser_config import VocParserCfg
 
 
 class COTSParser(Parser):
 
     DEFAULT_CLASSES = ['cots']
 
-    def __init__(self, cfg: COTSParserCfg):
+    def __init__(self, cfg: VocParserCfg):
         super().__init__(
             bbox_yxyx=cfg.bbox_yxyx,
             has_labels=cfg.has_labels,
