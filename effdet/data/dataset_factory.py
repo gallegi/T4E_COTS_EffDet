@@ -19,17 +19,8 @@ def create_cots_dataset(name, root, im_dir, fold, splits=('train', 'val')):
     dataset_cls = COTSDetectionDatset
     datasets = OrderedDict()
 
-    if fold == 0:
-        dataset_cfg = COTSCfgFold(0, im_dir)
-    elif fold == 1:
-        dataset_cfg = COTSCfgFold(1, im_dir)
-    elif fold == 2:
-        dataset_cfg = COTSCfgFold(2, im_dir)
-    elif fold == 3:
-        dataset_cfg = COTSCfgFold(3, im_dir)
-    elif fold == 4:
-        dataset_cfg = COTSCfgFold(4, im_dir)
-    
+    dataset_cfg = COTSCfgFold(fold, im_dir)
+
     for s in splits:
         if s not in dataset_cfg.splits:
             raise RuntimeError(f'{s} split not found in config')

@@ -6,15 +6,20 @@ import os
 from dataclasses import dataclass, field
 from typing import Dict
 
-@dataclass
+# @dataclass
 class COTSCfgFold:
-    variant: str = None
-    parser: str = 'cots'
-    num_classes: int = 1
-    img_filename: str = '%s.jpg'
+    # variant: str = None
+    # parser: str = 'cots'
+    # num_classes: int = 1
+    # img_filename: str = '%s.jpg'
  
     def __init__(self, fold, im_dir):
-        self.splits: Dict[str, dict] = field(default_factory=lambda: dict(
+        self.variant: str = None
+        self.parser: str = 'cots'
+        self.num_classes: int = 1
+        self.img_filename: str = '%s.jpg'
+
+        self.splits: Dict[str, dict] = dict(
             train=dict(
                 split_filename=[f'siim-covid19-detection/folds/effdet_train_fold{fold}.txt'],
                 ann_filename=['cots_dataset/labels/train/%s.xml'],
@@ -23,7 +28,7 @@ class COTSCfgFold:
                 split_filename=[f'cots_dataset/folds/effdet_valid_fold{fold}.txt'],
                 ann_filename=['cots_dataset/labels/train/%s.xml'],
                 img_dir=[im_dir]),
-        ))
+        )
 
 
 @dataclass
