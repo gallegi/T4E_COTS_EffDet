@@ -21,12 +21,12 @@ class COTSCfgFold:
 
         self.splits: Dict[str, dict] = dict(
             train=dict(
-                split_filename=[f'cots_dataset/folds/effdet_train_fold{fold}.txt'],
-                ann_filename=['cots_dataset/labels/train/%s.xml'],
+                split_filename=[f'folds/effdet_train_fold{fold}.txt'],
+                ann_filename=['labels/train/%s.xml'],
                 img_dir=[im_dir]),
             val=dict(
-                split_filename=[f'cots_dataset/folds/effdet_valid_fold{fold}.txt'],
-                ann_filename=['cots_dataset/labels/train/%s.xml'],
+                split_filename=[f'folds/effdet_valid_fold{fold}.txt'],
+                ann_filename=['labels/train/%s.xml'],
                 img_dir=[im_dir]),
         )
 
