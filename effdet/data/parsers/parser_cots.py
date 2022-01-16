@@ -49,7 +49,7 @@ class COTSParser(Parser):
             ids = f.readlines()
         for img_id in ids:
             img_id = img_id.strip("\n")
-            video_id, video_frame = img_id.split('_')
+            video_id, video_frame = img_id.split('-')
             filename = img_filename % f'video_{video_id}/{video_frame}'
             xml_path = ann_filename % img_id
             tree = ET.parse(xml_path)
