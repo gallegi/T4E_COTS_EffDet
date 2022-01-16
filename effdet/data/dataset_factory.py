@@ -46,7 +46,7 @@ def create_cots_dataset(name, root, im_dir, fold, splits=('train', 'val')):
                 img_filename=os.path.join(split_cfg['img_dir'], dataset_cfg.img_filename),
             )
             parser = create_parser(dataset_cfg.parser, cfg=parser_cfg)
-        datasets[s] = dataset_cls(data_dir=root, parser=parser, split=s)
+        datasets[s] = dataset_cls(parser=parser, split=s)
 
     datasets = list(datasets.values())
     return datasets if len(datasets) > 1 else datasets[0]

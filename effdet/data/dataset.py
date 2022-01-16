@@ -11,10 +11,9 @@ from .parsers import create_parser
 import albumentations as albu
 
 class COTSDetectionDatset(data.Dataset):
-    def __init__(self, data_dir, parser=None, parser_kwargs=None, transform=None, split=None):
+    def __init__(self, parser=None, parser_kwargs=None, transform=None, split=None):
         super(COTSDetectionDatset, self).__init__()
         parser_kwargs = parser_kwargs or {}
-        self.data_dir = data_dir
         if isinstance(parser, str):
             self._parser = create_parser(parser, **parser_kwargs)
         else:
@@ -67,7 +66,7 @@ class COTSDetectionDatset(data.Dataset):
             ann = self._parser.get_ann_info(index)
             target.update(ann)
 
-        img_path = self.data_dir / img_info['file_name']
+        img_path = img_info['file_name']
         img = Image.open(img_path).convert('RGB')
 
         if self.split == 'train':
