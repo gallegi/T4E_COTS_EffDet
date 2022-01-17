@@ -182,14 +182,14 @@ def validate(args):
             with amp_autocast():
                 outputs = bench(inputs, img_info=targets)
 
-            print('outputs:', outputs)
+            print('len outputs:', len(outputs))
             # evaluator.add_predictions(output, target)
 
             # measure elapsed time
             batch_time.update(time.time() - end)
             end = time.time()
 
-            for im_id, target in zip(im_ids, targets):
+            for target, output in zip(targets, outputs):
                 _index += 1
                 im_id = dataset_eval._parser.img_ids[_index]
                 print('im id:', im_id)
