@@ -92,6 +92,12 @@ parser.add_argument('--torchscript', dest='torchscript', action='store_true',
 parser.add_argument('--results', default='', type=str, metavar='FILENAME',
                     help='JSON filename for evaluation results')
 
+# custom arguments
+parser.add_argument('--im_dir', default='', type=str,
+                    help='Path to image_folder')
+parser.add_argument('--fold', type=int, default=0)
+parser.add_argument('--image_size', type=int, default=1280)
+
 
 def validate(args):
     setup_default_logging()
@@ -141,10 +147,13 @@ def validate(args):
     if args.num_gpu > 1:
         bench = torch.nn.DataParallel(bench, device_ids=list(range(args.num_gpu)))
 
-    dataset = create_dataset(args.dataset, args.root, args.split)
+    # dataset = create_dataset(args.dataset, args.root, args.split)
+    dataset_train, dataset_eval = create_cots_dataset(name=args.dataset, root=args.root, im_dir=args.im_dir, fold=args.fold)
+
     input_config = resolve_input_config(args, model_config)
     loader = create_loader(
-        dataset,
+        # dataset,
+        dataset_eval,
         input_size=input_config['input_size'],
         batch_size=args.batch_size,
         use_prefetcher=args.prefetcher,
