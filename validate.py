@@ -164,7 +164,7 @@ def validate(args):
         num_workers=args.workers,
         pin_mem=args.pin_mem)
 
-    evaluator = create_evaluator(args.dataset, dataset, pred_yxyx=False)
+    evaluator = create_evaluator(args.dataset, dataset_eval, pred_yxyx=False)
     bench.eval()
     batch_time = AverageMeter()
     end = time.time()
@@ -189,7 +189,7 @@ def validate(args):
                 )
 
     mean_ap = 0.
-    if dataset.parser.has_labels:
+    if dataset_eval.parser.has_labels:
         mean_ap = evaluator.evaluate(output_result_file=args.results)
     else:
         evaluator.save(args.results)
