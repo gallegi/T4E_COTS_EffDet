@@ -11,7 +11,7 @@ from .parsers import *
 from .dataset import DetectionDatset, COTSDetectionDatset
 from .parsers import create_parser
 
-def create_cots_dataset(name, root, im_dir, fold, splits=('train', 'val')):
+def create_cots_dataset(name, root, im_dir, fold, splits=('train', 'val'), return_im_ids=False):
     if isinstance(splits, str):
         splits = (splits,)
     name = name.lower()
@@ -46,7 +46,7 @@ def create_cots_dataset(name, root, im_dir, fold, splits=('train', 'val')):
                 img_filename=os.path.join(split_cfg['img_dir'], dataset_cfg.img_filename),
             )
             parser = create_parser(dataset_cfg.parser, cfg=parser_cfg)
-        datasets[s] = dataset_cls(parser=parser, split=s)
+        datasets[s] = dataset_cls(parser=parser, split=s, return_im_ids=return_im_ids)
 
     datasets = list(datasets.values())
     return datasets if len(datasets) > 1 else datasets[0]

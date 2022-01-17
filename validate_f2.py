@@ -150,7 +150,7 @@ def validate(args):
         bench = torch.nn.DataParallel(bench, device_ids=list(range(args.num_gpu)))
 
     # dataset = create_dataset(args.dataset, args.root, args.split)
-    dataset_train, dataset_eval = create_cots_dataset(name=args.dataset, root=args.root, im_dir=args.im_dir, fold=args.fold)
+    dataset_train, dataset_eval = create_cots_dataset(name=args.dataset, root=args.root, im_dir=args.im_dir, fold=args.fold, return_im_ids=True)
 
     input_config = resolve_input_config(args, model_config)
     loader = create_loader(
