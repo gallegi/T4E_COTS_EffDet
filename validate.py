@@ -9,7 +9,7 @@ import torch
 import torch.nn.parallel
 from contextlib import suppress
 
-from effdet import create_model, create_evaluator, create_dataset, create_loader
+from effdet import create_model, create_evaluator, create_dataset, create_loader, create_cots_dataset
 from effdet.data import resolve_input_config
 from timm.utils import AverageMeter, setup_default_logging
 from timm.models.layers import set_layer_config
