@@ -11,7 +11,7 @@ from .parsers import create_parser
 import albumentations as albu
 
 class COTSDetectionDatset(data.Dataset):
-    def __init__(self, parser=None, parser_kwargs=None, transform=None, split=None, return_im_ids=False):
+    def __init__(self, parser=None, parser_kwargs=None, transform=None, split=None):
         super(COTSDetectionDatset, self).__init__()
         parser_kwargs = parser_kwargs or {}
         if isinstance(parser, str):
@@ -21,7 +21,6 @@ class COTSDetectionDatset(data.Dataset):
             self._parser = parser
         self._transform = transform
         self.split = split
-        self.return_im_ids = return_im_ids
 
         # self.albu_transform = albu.Compose([
         #     albu.Rotate(limit=5, interpolation=1, border_mode=0, value=0, p=0.25),
@@ -57,10 +56,6 @@ class COTSDetectionDatset(data.Dataset):
         #         if target['img_scale'] > mix_target['img_scale']:
         #             target['img_size'] = mix_target['img_size']
 
-        if self.return_im_ids:
-            im_id = self._parser.img_ids[index]
-            return im_id, img, target
-            
         return img, target
 
 

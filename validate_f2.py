@@ -150,7 +150,7 @@ def validate(args):
         bench = torch.nn.DataParallel(bench, device_ids=list(range(args.num_gpu)))
 
     # dataset = create_dataset(args.dataset, args.root, args.split)
-    dataset_train, dataset_eval = create_cots_dataset(name=args.dataset, root=args.root, im_dir=args.im_dir, fold=args.fold, return_im_ids=True)
+    dataset_train, dataset_eval = create_cots_dataset(name=args.dataset, root=args.root, im_dir=args.im_dir, fold=args.fold)
 
     input_config = resolve_input_config(args, model_config)
     loader = create_loader(
@@ -176,8 +176,9 @@ def validate(args):
     list_predictions = []
     list_groundtruths = []
 
+    _index = -1
     with torch.no_grad():
-        for i, (im_ids, inputs, targets) in enumerate(loader):
+        for i, (inputs, targets) in enumerate(loader):
             with amp_autocast():
                 outputs = bench(inputs, img_info=targets)
 
@@ -189,6 +190,9 @@ def validate(args):
             end = time.time()
 
             for im_id, target in zip(im_ids, targets):
+                _index += 1
+                im_id = dataset_eval._parser.img_ids[_index]
+                print('im id:', im_id)
                 list_image_ids.append(im_id)
                 print(target)
                 list_groundtruths.append(target)
