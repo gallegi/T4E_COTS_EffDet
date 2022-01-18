@@ -299,13 +299,13 @@ def validate(args):
 
     version = args.checkpoint.split('/')[-2]
     os.makedirs(f'{args.results}/{version}', exist_ok=True)
-    with open(f'{args.results}/{version}/{version}_predictions.pkl', 'wb') as f:
+    with open(f'{args.results}/{version}/{version}_predictions_thresh{args.conf_thresh}.pkl', 'wb') as f:
         pickle.dump(out_dict, f)
 
-    with open(f'{args.results}/{version}/{version}_log_dict.pkl', 'wb') as f:
+    with open(f'{args.results}/{version}/{version}_log_dict_thresh{args.conf_thresh}.pkl', 'wb') as f:
         pickle.dump(log_dict, f)
 
-    detail_df.to_csv(f'{args.results}/{version}/{version}_detail.csv', index=False)
+    detail_df.to_csv(f'{args.results}/{version}/{version}_detail_thresh{args.conf_thresh}.csv', index=False)
 
     return f2
 
