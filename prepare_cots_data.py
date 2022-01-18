@@ -14,7 +14,7 @@ parser.add_argument('--image_dir', type=str,
                     help='Path to image folder')                   
 parser.add_argument('--output_dir', type=str, default='cots_dataset',
                     help='Path to save generated xml annotations')
-parser.add_argument('--filter_negatives', action='store_true', default=True,
+parser.add_argument('--filter_negatives', action='store_true', default=False,
                     help='Path to save generated xml annotations')
 
 args = parser.parse_args()
