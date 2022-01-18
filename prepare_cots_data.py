@@ -14,6 +14,8 @@ parser.add_argument('--image_dir', type=str,
                     help='Path to image folder')                   
 parser.add_argument('--output_dir', type=str, default='cots_dataset',
                     help='Path to save generated xml annotations')
+parser.add_argument('--filter_negatives', action='store_true', default=True,
+                    help='Path to save generated xml annotations')
 
 args = parser.parse_args()
 
@@ -95,7 +97,9 @@ if __name__ == '__main__':
     os.makedirs(f'{OUTPUT_DIR}/folds', exist_ok=True)
 
     df = pd.read_csv(CSV_FILE)
-    df = df.loc[df['has_annotations'] == True].reset_index(drop=True)
+
+    if args.filter_negatives:
+        df = df.loc[df['has_annotations'] == True].reset_index(drop=True)
 
     df['annotations'] = df['annotations'].apply(ast.literal_eval)
     df['bboxes'] = df.annotations.apply(get_bbox)
