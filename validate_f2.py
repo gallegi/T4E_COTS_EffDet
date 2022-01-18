@@ -3,6 +3,7 @@
 
 Hacked together by Ross Wightman (https://github.com/rwightman)
 """
+import os
 import argparse
 import time
 import torch
@@ -297,6 +298,7 @@ def validate(args):
     print(f'Save result to {args.results}')
 
     version = args.checkpoint.split('/')[-2]
+    os.makedirs(f'{args.results}/{version}', exist_ok=True)
     with open(f'{args.results}/{version}/{version}_predictions.pkl', 'wb') as f:
         pickle.dump(out_dict, f)
 
