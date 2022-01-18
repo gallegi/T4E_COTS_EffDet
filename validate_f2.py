@@ -103,7 +103,7 @@ parser.add_argument('--fold', type=int, default=0)
 parser.add_argument('--conf_thresh', default=0.5, type=float,
                     help='Confidence threshold for prediction')
 parser.add_argument('--overlap_algo', default='nms', type=str,
-                     help='Algorithm to process overlapping boxes: nms, soft_nms, non_maximum_weighted, non_maximum_weighted')
+                     help='Algorithm to process overlapping boxes: nms, soft_nms, non_maximum_weighted, weighted_boxes_fusion')
 parser.add_argument('--iou_thresh', default=0.5, type=float,
                      help='IOU threshold for overlap processing algorithm')
 parser.add_argument('--skip_box_thresh', default=0.01, type=float,
