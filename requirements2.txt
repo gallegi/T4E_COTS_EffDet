@@ -15,3 +15,4 @@ lxml==4.7.1
 
 albumentations==1.0.0
 
+ensemble-boxes==1.0.8

@@ -98,8 +98,79 @@ parser.add_argument('--results', default='', type=str, metavar='FILENAME',
 parser.add_argument('--im_dir', default='', type=str,
                     help='Path to image_folder')
 parser.add_argument('--fold', type=int, default=0)
-parser.add_argument('--image_size', type=int, default=1280)
+parser.add_argument('--conf_thresh', default=0.5, type=float,
+                    metavar='N', help='Confidence threshold for prediction')
 
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+
+from ensemble_boxes import nms, soft_nms, non_maximum_weighted, weighted_boxes_fusion
+import ensemble_boxes
+
+def post_process_overlap(output, skip_box_thr=0.01, sigma=0.1, iou_thr=0.5, algo_type='nms'):
+    
+    boxes_list = [output[:,:4]]
+    scores_list = [output[:,4]]
+    labels_list = [output[:,5]]
+    weights = [1]
+
+    if algo_type == 'nms':
+        boxes, scores, labels = nms(boxes_list, scores_list, labels_list, weights=weights, iou_thr=iou_thr)
+    elif algo_type == 'soft_nms':
+        boxes, scores, labels = soft_nms(boxes_list, scores_list, labels_list, weights=weights, iou_thr=iou_thr, sigma=sigma, thresh=skip_box_thr)
+    elif algo_type == 'non_maximum_weighted':
+        boxes, scores, labels = non_maximum_weighted(boxes_list, scores_list, labels_list, weights=weights, iou_thr=iou_thr, skip_box_thr=skip_box_thr)
+    elif algo_type == 'weighted_boxes_fusion':
+        boxes, scores, labels = weighted_boxes_fusion(boxes_list, scores_list, labels_list, weights=weights, iou_thr=iou_thr, skip_box_thr=skip_box_thr)
+    else:
+        raise ValueError('No such algo_type')
+
+    return boxes, scores, labels
+
+def get_xywh_grountruths(cls, bbox, img_size, img_scale):
+    xywh_groundtruths = []
+
+    # filter dummy box in target
+    filtering = cls != -1
+    cls = cls[filtering]
+    bbox = bbox[filtering, :]
+
+    bbox = bbox * img_scale
+
+    for box in bbox:
+        y1, x1, y2, x2 = box.cpu().numpy().astype(int)
+        w, h = x2-x1, y2 - y1
+
+        xywh_groundtruths.append([x1, y1, w, h])
+
+    xywh_groundtruths = np.array(xywh_groundtruths)
+
+    return xywh_groundtruths
+
+def get_xywh_predictions(output, img_size, img_scale, conf_thresh=0.5):
+    output[:,:4] = output[:,:4] / img_size 
+    output = np.clip(output, 0, 1)
+
+    boxes, scores, labels = post_process_overlap(output)
+    boxes *= img_size # back to absolute size
+
+    boxes *= img_scale.cpu().numpy() # back to original size
+
+    # filter by conf score
+    filtering = scores >= conf_thresh 
+    scores = scores[filtering]
+    boxes = boxes[filtering]
+    labels = labels[filtering]
+
+    xywh_predictions = []
+    for score, box in zip(scores, boxes):
+        px1, py1, px2, py2 = box
+        pw, ph = px2 - px1, py2 - py1
+        xywh_predictions.append([score, px1, py1, pw, ph])
+
+    xywh_predictions = np.array(xywh_predictions)
+    return xywh_predictions
 
 def validate(args):
     setup_default_logging()
@@ -179,23 +250,28 @@ def validate(args):
     _index = -1
     with torch.no_grad():
         for i, (inputs, targets) in enumerate(loader):
-            with amp_autocast():
-                outputs = bench(inputs, img_info=targets)
+            with amp_autocast(), torch.no_grad():
+                outputs = bench(inputs)
 
-            print('len outputs:', len(outputs))
-            # evaluator.add_predictions(output, target)
+            # get xywh ground truth
+            for j in range(len(inputs)):
+                _index += 1
+                # retrieve im_id
+                im_id = dataset_eval._parser.img_ids[_index]
+                list_image_ids.append(im_id)
+
+                cls, bbox, img_size, img_scale = targets['cls'][j], targets['bbox'][j], targets['img_size'][j], \
+                                            targets['img_scale'][j]
+                xywh_groundtruths = get_xywh_grountruths(cls, bbox, img_size, img_scale)  
+                list_groundtruths.append(xywh_groundtruths)
+
+                output = outputs[j].detach().cpu().numpy()
+                xywh_predictions = get_xywh_predictions(output, args.conf_thresh, img_size=args.img_size, img_scale=args.img_scale)
+                list_predictions.append(xywh_predictions)
 
             # measure elapsed time
             batch_time.update(time.time() - end)
             end = time.time()
-
-            for target, output in zip(targets, outputs):
-                _index += 1
-                im_id = dataset_eval._parser.img_ids[_index]
-                print('im id:', im_id)
-                list_image_ids.append(im_id)
-                print(target)
-                list_groundtruths.append(target)
 
             if i % args.log_freq == 0 or i == last_idx:
                 print(
@@ -206,11 +282,9 @@ def validate(args):
                         rate_avg=inputs.size(0) / batch_time.avg)
                 )
 
-    f2 = 0
-    f2 = calc_f2_score(list_image_ids, list_groundtruths, list_predictions)
-
+    f2, log_dict, detail = calc_f2_score(list_image_ids, list_groundtruths, list_predictions, verbose=True)
+    print('F2:', f2)
     return f2
-
 
 def main():
     args = parser.parse_args()
