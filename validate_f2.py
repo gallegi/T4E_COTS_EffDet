@@ -13,6 +13,7 @@ from effdet import create_model, create_evaluator, create_dataset, create_loader
 from effdet.data import resolve_input_config
 from timm.utils import AverageMeter, setup_default_logging
 from timm.models.layers import set_layer_config
+import pickle
 
 from metrics import calc_f2_score
 
@@ -99,14 +100,17 @@ parser.add_argument('--im_dir', default='', type=str,
                     help='Path to image_folder')
 parser.add_argument('--fold', type=int, default=0)
 parser.add_argument('--conf_thresh', default=0.5, type=float,
-                    metavar='N', help='Confidence threshold for prediction')
+                    help='Confidence threshold for prediction')
+parser.add_argument('--overlap_algo', default='nms', type=str,
+                     help='Algorithm to process overlapping boxes: nms, soft_nms, non_maximum_weighted, non_maximum_weighted')
+parser.add_argument('--iou_thresh', default=0.5, type=float,
+                     help='IOU threshold for overlap processing algorithm')
+parser.add_argument('--skip_box_thresh', default=0.01, type=float,
+                     help='Confidence threshold to remove the box when using the algorithm to merge overlapping boxes')
 
-import cv2
 import numpy as np
-import matplotlib.pyplot as plt
 
 from ensemble_boxes import nms, soft_nms, non_maximum_weighted, weighted_boxes_fusion
-import ensemble_boxes
 
 def post_process_overlap(output, skip_box_thr=0.01, sigma=0.1, iou_thr=0.5, algo_type='nms'):
     
@@ -148,17 +152,18 @@ def get_xywh_grountruths(cls, bbox, img_size, img_scale):
 
     return xywh_groundtruths
 
-def get_xywh_predictions(output, img_size, img_scale, conf_thresh=0.5):
-    output[:,:4] = output[:,:4] / img_size 
+def get_xywh_predictions(output, img_scale, args):
+    output[:,:4] = output[:,:4] / args.img_size 
     output = np.clip(output, 0, 1)
 
-    boxes, scores, labels = post_process_overlap(output)
-    boxes *= img_size # back to absolute size
+    boxes, scores, labels = post_process_overlap(output, args.skip_box_thresh, iou_thr=args.iou_thresh,
+                                                algo_type=args.overlap_algo)
+    boxes *= args.img_size # back to absolute size
 
     boxes *= img_scale.cpu().numpy() # back to original size
 
     # filter by conf score
-    filtering = scores >= conf_thresh 
+    filtering = scores >= args.conf_thresh 
     scores = scores[filtering]
     boxes = boxes[filtering]
     labels = labels[filtering]
@@ -266,7 +271,7 @@ def validate(args):
                 list_groundtruths.append(xywh_groundtruths)
 
                 output = outputs[j].detach().cpu().numpy()
-                xywh_predictions = get_xywh_predictions(output, img_size=args.img_size, img_scale=img_scale, conf_thresh=args.conf_thresh)
+                xywh_predictions = get_xywh_predictions(output, img_scale=img_scale, args=args)
                 list_predictions.append(xywh_predictions)
 
             # measure elapsed time
@@ -282,8 +287,24 @@ def validate(args):
                         rate_avg=inputs.size(0) / batch_time.avg)
                 )
 
-    f2, log_dict, detail = calc_f2_score(list_image_ids, list_groundtruths, list_predictions, verbose=True)
+    f2, log_dict, detail_df = calc_f2_score(list_image_ids, list_groundtruths, list_predictions, verbose=True)
     print('F2:', f2)
+
+    out_dict = dict()
+    for image_id, prediction in zip(list_image_ids, list_predictions):
+        out_dict[image_id] = prediction
+
+    print(f'Save result to {args.results}')
+
+    version = args.checkpoint.split('/')[-2]
+    with open(f'{args.results}/{version}/{version}_predictions.pkl', 'wb') as f:
+        pickle.dump(out_dict, f)
+
+    with open(f'{args.results}/{version}/{version}_log_dict.pkl', 'wb') as f:
+        pickle.dump(log_dict, f)
+
+    detail_df.to_csv(f'{args.results}/{version}/{version}_detail.csv', index=False)
+
     return f2
 
 def main():
