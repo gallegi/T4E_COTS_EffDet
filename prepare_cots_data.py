@@ -116,16 +116,15 @@ if __name__ == '__main__':
             image_id = row.image_id
             bboxes = row.bboxes
 
-            if len(bboxes) > 0:
-                meles.append(ME(image_path, image_relative_path, row['image_id'], bboxes))
+            meles.append(ME(image_path, image_relative_path, row['image_id'], bboxes))
         
         p = Pool(8)
         results = p.map(func=create_ann, iterable = meles)
         p.close()
 
     for fold in range(5):
-        val_df = df.loc[df['fold'] == fold].sample(frac=1).reset_index(drop=True)
-        train_df = df.loc[df['fold'] != fold].sample(frac=1).reset_index(drop=True)
+        val_df = df.loc[df['fold'] == fold].reset_index(drop=True)
+        train_df = df.loc[df['fold'] != fold].reset_index(drop=True)
         
         effdet_tf = open(f"{OUTPUT_DIR}/folds/effdet_train_fold{fold}.txt", "w")
         for _, row in train_df.iterrows():
