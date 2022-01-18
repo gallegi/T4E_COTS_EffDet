@@ -266,7 +266,7 @@ def validate(args):
                 list_groundtruths.append(xywh_groundtruths)
 
                 output = outputs[j].detach().cpu().numpy()
-                xywh_predictions = get_xywh_predictions(output, args.conf_thresh, img_size=args.img_size, img_scale=img_scale)
+                xywh_predictions = get_xywh_predictions(output, img_size=args.img_size, img_scale=img_scale, conf_thresh=args.conf_thresh)
                 list_predictions.append(xywh_predictions)
 
             # measure elapsed time
